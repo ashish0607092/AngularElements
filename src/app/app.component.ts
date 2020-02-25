@@ -1,6 +1,5 @@
+import { Components } from './store/desktop.interface';
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
-import { DesktopService } from './desktop.service';
-import { Components } from './desktop.interface';
 import { Observable } from 'rxjs';
 import { eventDispatcher, store } from './store';
 import { ActionTypes } from './store/actions';
@@ -9,7 +8,7 @@ import { ActionTypes } from './store/actions';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  encapsulation: ViewEncapsulation.Native
+  encapsulation: ViewEncapsulation.Emulated
 })
 export class AppComponent implements OnInit {
   addedComponent$: Observable<Components>;
@@ -17,16 +16,30 @@ export class AppComponent implements OnInit {
   componentList: Components[] = [];
   constructor() {
     store.subscribe((state) => {
-      this.componentList = state.componentList;
-      console.log(this.componentList);
+      this.componentList = state.componentList.sort((a, b) => {
+        if (a.timestamp > b.timestamp) {
+          return -1;
+        }
+      });
     });
   }
   ngOnInit() {
     eventDispatcher.next({ type: ActionTypes.GET_COMPONENT });
   }
   addComponent() {
-    eventDispatcher.next({ type: ActionTypes.ADD_COMPONENT, payload: { name: this.value } });
-    this.value = '';
+    eventDispatcher.next({
+      type: ActionTypes.ADD_COMPONENT, payload: {
+        name: this.value,
+        id: '_' + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().getTime()
+      }
+    });
+    this.value = undefined;
+  }
+  remove(component) {
+    eventDispatcher.next({
+      type: ActionTypes.REMOVE_COMPONENT, payload: component
+    });
   }
 }
 

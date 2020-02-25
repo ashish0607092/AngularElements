@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { ActionTypes } from './actions';
-import { Components } from '../desktop.interface';
+import { Components } from './desktop.interface';
 
 interface InitialState {
   componentList: Components[];
@@ -12,7 +12,7 @@ let state: InitialState = {
 
 interface Event {
   type: string;
-  payload?: any;
+  payload?: Components;
 }
 
 export const store = new Subject<InitialState>();
@@ -27,6 +27,12 @@ eventDispatcher.subscribe((data: Event) => {
       store.next(state);
       break;
     case ActionTypes.GET_COMPONENT:
+      store.next(state);
+      break;
+    case ActionTypes.REMOVE_COMPONENT:
+      state = {
+        componentList: state.componentList.filter(component => component.id !== data.payload.id)
+      };
       store.next(state);
       break;
     default:
